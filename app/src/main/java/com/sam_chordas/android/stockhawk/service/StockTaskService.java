@@ -1,5 +1,9 @@
 package com.sam_chordas.android.stockhawk.service;
 
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.GcmTaskService;
+import com.google.android.gms.gcm.TaskParams;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
@@ -7,15 +11,15 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.RemoteException;
 import android.util.Log;
-import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.GcmTaskService;
-import com.google.android.gms.gcm.TaskParams;
+
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -56,13 +60,13 @@ public class StockTaskService extends GcmTaskService{
     StringBuilder urlStringBuilder = new StringBuilder();
     try{
       // Base URL for the Yahoo query
-      urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
-      urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.quotes where symbol "
-        + "in (", "UTF-8"));
+      urlStringBuilder.append(getString(R.string.service_base_url));
+      urlStringBuilder.append(URLEncoder.encode(getString(R.string.service_select_url)
+        , getString(R.string.service_encode_url)));
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    if (params.getTag().equals("init") || params.getTag().equals("periodic")){
+    if (params.getTag().equals(getString(R.string.value_init)) || params.getTag().equals(getString(R.string.tag_periodic))){
       isUpdate = true;
       initQueryCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
           new String[] { "Distinct " + QuoteColumns.SYMBOL }, null,
@@ -71,7 +75,8 @@ public class StockTaskService extends GcmTaskService{
         // Init task. Populates DB with quotes for the symbols seen below
         try {
           urlStringBuilder.append(
-              URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
+              URLEncoder.encode(URLEncoder.encode(getString(R.string.service_url_init_symbols)
+                      ,getString(R.string.service_encode_url))));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
@@ -80,53 +85,57 @@ public class StockTaskService extends GcmTaskService{
         initQueryCursor.moveToFirst();
         for (int i = 0; i < initQueryCursor.getCount(); i++){
           mStoredSymbols.append("\""+
-              initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol"))+"\",");
+              initQueryCursor.getString(initQueryCursor.getColumnIndex(QuoteColumns.SYMBOL))+"\",");
           initQueryCursor.moveToNext();
         }
         mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
         try {
-          urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(), "UTF-8"));
+          urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(),
+                  getString(R.string.service_encode_url)));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
       }
-    } else if (params.getTag().equals("add")){
+    } else if (params.getTag().equals(getString(R.string.value_add))) {
       isUpdate = false;
       // get symbol from params.getExtra and build query
-      String stockInput = params.getExtras().getString("symbol");
+      String stockInput = params.getExtras().getString(getString(R.string.key_symbol));
       try {
-        urlStringBuilder.append(URLEncoder.encode("\""+stockInput+"\")", "UTF-8"));
-      } catch (UnsupportedEncodingException e){
+        urlStringBuilder.append(URLEncoder.encode("\"" + stockInput + "\")",
+                getString(R.string.service_encode_url)));
+      } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }
     }
     // finalize the URL for the API query.
-    urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables."
-        + "org%2Falltableswithkeys&callback=");
+    urlStringBuilder.append(getString(R.string.service_append_url));
 
     String urlString;
     String getResponse;
     int result = GcmNetworkManager.RESULT_FAILURE;
 
-    if (urlStringBuilder != null){
+    if (urlStringBuilder != null) {
       urlString = urlStringBuilder.toString();
-      try{
+      Log.e("url", urlString);
+      try {
         getResponse = fetchData(urlString);
-        result = GcmNetworkManager.RESULT_SUCCESS;
         try {
-          ContentValues contentValues = new ContentValues();
-          // update ISCURRENT to 0 (false) so new data is current
-          if (isUpdate){
-            contentValues.put(QuoteColumns.ISCURRENT, 0);
-            mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
-                null, null);
+          if (Utils.quoteJsonToContentVals(getResponse) != null) {
+            ContentValues contentValues = new ContentValues();
+            // update ISCURRENT to 0 (false) so new data is current
+            if (isUpdate) {
+              contentValues.put(QuoteColumns.ISCURRENT, 0);
+              mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
+                      null, null);
+            }
+            mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
+                    Utils.quoteJsonToContentVals(getResponse));
+            result = GcmNetworkManager.RESULT_SUCCESS;
           }
-          mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
-              Utils.quoteJsonToContentVals(getResponse));
-        }catch (RemoteException | OperationApplicationException e){
+        } catch (RemoteException | OperationApplicationException e) {
           Log.e(LOG_TAG, "Error applying batch insert", e);
         }
-      } catch (IOException e){
+      } catch (IOException e) {
         e.printStackTrace();
       }
     }
@@ -135,3 +144,4 @@ public class StockTaskService extends GcmTaskService{
   }
 
 }
+

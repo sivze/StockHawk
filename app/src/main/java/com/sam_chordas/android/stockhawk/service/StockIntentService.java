@@ -28,13 +28,13 @@ public class StockIntentService extends IntentService {
     Log.d(StockIntentService.class.getSimpleName(), "Stock Intent Service");
     StockTaskService stockTaskService = new StockTaskService(this);
     Bundle args = new Bundle();
-    if (intent.getStringExtra("tag").equals("add")){
-      args.putString("symbol", intent.getStringExtra("symbol"));
+    if (intent.getStringExtra(getString(R.string.key_tag)).equals(getString(R.string.value_add))){
+      args.putString(getString(R.string.key_symbol), intent.getStringExtra(getString(R.string.key_symbol)));
     }
     // We can call OnRunTask from the intent service to force it to run immediately instead of
     // scheduling a task.
     try {
-      stockTaskService.onRunTask(new TaskParams(intent.getStringExtra("tag"), args));
+      stockTaskService.onRunTask(new TaskParams(intent.getStringExtra(getString(R.string.key_tag)), args));
     } catch (Exception e){
       //show invalid ticker error on adding invalid ticker
       Handler handler = new Handler(getMainLooper());

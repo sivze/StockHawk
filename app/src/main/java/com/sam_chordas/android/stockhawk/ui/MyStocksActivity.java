@@ -23,6 +23,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -59,12 +60,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     mContext = this;
-    ConnectivityManager cm =
-        (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-    isConnected = activeNetwork != null &&
-        activeNetwork.isConnectedOrConnecting();
+    checkNetwork();
     setContentView(R.layout.activity_my_stocks);
     // The intent service is for executing immediate pulls from the Yahoo API
     // GCMTaskService can only schedule tasks, they cannot execute immediately
@@ -76,6 +72,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         startService(mServiceIntent);
       } else{
         networkToast();
+        networkMsg();
       }
     }
     RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -97,7 +94,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     fab.attachToRecyclerView(recyclerView);
     fab.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
+        checkNetwork();
         if (isConnected){
+          findViewById(R.id.noInternetMsg).setVisibility(View.GONE);
           new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
               .content(R.string.content_test)
               .inputType(InputType.TYPE_CLASS_TEXT)
@@ -126,6 +125,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
               .show();
         } else {
           networkToast();
+          networkMsg();
         }
 
       }
@@ -157,6 +157,17 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     }
   }
 
+  private void networkMsg() {
+    findViewById(R.id.noInternetMsg).setVisibility(View.VISIBLE);
+    View recycler = findViewById(R.id.recycler_view);
+    // refresh recyclerview so that it doesn't overlap with the msg block
+    recycler.setVisibility(View.GONE);
+    recycler.setVisibility(View.VISIBLE);
+    // push recyclerview below the msg block
+    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) recycler.getLayoutParams();
+    params.addRule(RelativeLayout.BELOW, R.id.noInternetMsg);
+  }
+
 
   @Override
   public void onResume() {
@@ -168,6 +179,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_SHORT).show();
   }
 
+  private void checkNetwork() {
+    ConnectivityManager cm =
+            (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+    NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+    isConnected = activeNetwork != null &&
+            activeNetwork.isConnectedOrConnecting();
+  }
   public void restoreActionBar() {
     ActionBar actionBar = getSupportActionBar();
     actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);

@@ -60,13 +60,13 @@ public class StockTaskService extends GcmTaskService{
     StringBuilder urlStringBuilder = new StringBuilder();
     try{
       // Base URL for the Yahoo query
-      urlStringBuilder.append(getString(R.string.service_base_url));
-      urlStringBuilder.append(URLEncoder.encode(getString(R.string.service_select_url)
-        , getString(R.string.service_encode_url)));
+      urlStringBuilder.append(mContext.getString(R.string.service_url_base));
+      urlStringBuilder.append(URLEncoder.encode(mContext.getString(R.string.service_url_select)
+        , mContext.getString(R.string.service_url_encode)));
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    if (params.getTag().equals(getString(R.string.value_init)) || params.getTag().equals(getString(R.string.tag_periodic))){
+    if (params.getTag().equals(mContext.getString(R.string.value_init)) || params.getTag().equals(mContext.getString(R.string.tag_periodic))){
       isUpdate = true;
       initQueryCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
           new String[] { "Distinct " + QuoteColumns.SYMBOL }, null,
@@ -75,8 +75,8 @@ public class StockTaskService extends GcmTaskService{
         // Init task. Populates DB with quotes for the symbols seen below
         try {
           urlStringBuilder.append(
-              URLEncoder.encode(URLEncoder.encode(getString(R.string.service_url_init_symbols)
-                      ,getString(R.string.service_encode_url))));
+              URLEncoder.encode(URLEncoder.encode(mContext.getString(R.string.service_url_init_symbols)
+                      ,mContext.getString(R.string.service_url_encode))));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
@@ -91,24 +91,24 @@ public class StockTaskService extends GcmTaskService{
         mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
         try {
           urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(),
-                  getString(R.string.service_encode_url)));
+                  mContext.getString(R.string.service_url_encode)));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
       }
-    } else if (params.getTag().equals(getString(R.string.value_add))) {
+    } else if (params.getTag().equals(mContext.getString(R.string.value_add))) {
       isUpdate = false;
       // get symbol from params.getExtra and build query
-      String stockInput = params.getExtras().getString(getString(R.string.key_symbol));
+      String stockInput = params.getExtras().getString(mContext.getString(R.string.key_symbol));
       try {
         urlStringBuilder.append(URLEncoder.encode("\"" + stockInput + "\")",
-                getString(R.string.service_encode_url)));
+                mContext.getString(R.string.service_url_encode)));
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }
     }
     // finalize the URL for the API query.
-    urlStringBuilder.append(getString(R.string.service_append_url));
+    urlStringBuilder.append(mContext.getString(R.string.service_url_append));
 
     String urlString;
     String getResponse;

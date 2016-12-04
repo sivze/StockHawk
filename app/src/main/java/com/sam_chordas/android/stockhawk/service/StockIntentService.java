@@ -41,7 +41,7 @@ public class StockIntentService extends IntentService {
       handler.post(new Runnable() {
         @Override
         public void run() {
-          Toast.makeText(getApplicationContext(), getString(R.string.invalid_stock_ticker), Toast.LENGTH_SHORT)
+          Toast.makeText(getApplicationContext(), getString(R.string.invalid_toastpr), Toast.LENGTH_SHORT)
           .show();
         }
       });

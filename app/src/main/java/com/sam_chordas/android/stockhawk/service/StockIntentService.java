@@ -35,7 +35,7 @@ public class StockIntentService extends IntentService {
     }
     // We can call OnRunTask from the intent service to force it to run immediately instead of
     // scheduling a task.
-    if (stockTaskService.onRunTask(new TaskParams(intent.getStringExtra("tag"), args))
+    if (stockTaskService.onRunTask(new TaskParams(intent.getStringExtra(getString(R.string.key_tag)), args))
             == GcmNetworkManager.RESULT_FAILURE) {
       // Not valid stock input
       final String input = intent.getStringExtra(getString(R.string.key_symbol)).toUpperCase();
@@ -54,9 +54,11 @@ public class StockIntentService extends IntentService {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
           @Override
           public void run() {
-            Toast.makeText(getApplicationContext(), input +
-                    getApplicationContext().getResources()
-                            .getString(R.string.valid_toast), Toast.LENGTH_SHORT).show();
+            if(!input.isEmpty()) {
+              Toast.makeText(getApplicationContext(), input +
+                      getApplicationContext().getResources()
+                              .getString(R.string.valid_toast), Toast.LENGTH_SHORT).show();
+            }
           }
         });
       }

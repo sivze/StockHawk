@@ -14,4 +14,6 @@
   <dimen name="widget_component_margin">3dp</dimen>
   <dimen name="widget_value_padding">10sp</dimen>
 
+  <!--detail page-->
+  <dimen name="detail_text_padding">5dp</dimen>
 </resources>

@@ -74,9 +74,8 @@ public class StockTaskService extends GcmTaskService{
       if (initQueryCursor.getCount() == 0 || initQueryCursor == null){
         // Init task. Populates DB with quotes for the symbols seen below
         try {
-          urlStringBuilder.append(
-              URLEncoder.encode(URLEncoder.encode(mContext.getString(R.string.service_url_init_symbols)
-                      ,mContext.getString(R.string.service_url_encode))));
+          urlStringBuilder.append(URLEncoder.encode(mContext.getString(R.string.service_url_init_symbols)
+                  , mContext.getString(R.string.service_url_encode)));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }

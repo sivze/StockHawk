@@ -40,6 +40,7 @@ import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallb
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
   public static final String INTENT_POSITION = "position_clicked";
+  public static final String INTENT_SYMBOL = "symbol";
   /**
    * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
    */
@@ -86,6 +87,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 // Open detail activity that shows the stock change graph
                 Intent intent = new Intent(MyStocksActivity.this, StockDetailActivity.class);
                 intent.putExtra(INTENT_POSITION, position);
+                mCursor.moveToPosition(position);
+                intent.putExtra(INTENT_SYMBOL, mCursor.getString(1));
                 startActivity(intent);
               }
             }));

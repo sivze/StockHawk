@@ -39,7 +39,7 @@ import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 
 public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
-
+  public static final String INTENT_POSITION = "position_clicked";
   /**
    * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
    */
@@ -83,8 +83,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
             new RecyclerViewItemClickListener.OnItemClickListener() {
               @Override public void onItemClick(View v, int position) {
-                //TODO:
-                // do something on item click
+                // Open detail activity that shows the stock change graph
+                Intent intent = new Intent(MyStocksActivity.this, StockDetailActivity.class);
+                intent.putExtra(INTENT_POSITION, position);
+                startActivity(intent);
               }
             }));
     recyclerView.setAdapter(mCursorAdapter);

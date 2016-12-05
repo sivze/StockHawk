@@ -30,17 +30,18 @@ public class Utils {
       if (jsonObject != null && jsonObject.length() != 0){
         jsonObject = jsonObject.getJSONObject("query");
         int count = Integer.parseInt(jsonObject.getString("count"));
+        String created = jsonObject.getString("created");
         if (count == 1){
           jsonObject = jsonObject.getJSONObject("results")
               .getJSONObject("quote");
-          batchOperations.add(buildBatchOperation(jsonObject));
+          batchOperations.add(buildBatchOperation(jsonObject, created));
         } else{
           resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
 
           if (resultsArray != null && resultsArray.length() != 0){
             for (int i = 0; i < resultsArray.length(); i++){
               jsonObject = resultsArray.getJSONObject(i);
-              batchOperations.add(buildBatchOperation(jsonObject));
+              batchOperations.add(buildBatchOperation(jsonObject, created));
             }
           }
         }
@@ -75,7 +76,7 @@ public class Utils {
     return change;
   }
 
-  public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject){
+  public static ContentProviderOperation buildBatchOperation(JSONObject jsonObject, String created){
     ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
         QuoteProvider.Quotes.CONTENT_URI);
     try {
@@ -91,7 +92,7 @@ public class Utils {
       }else{
         builder.withValue(QuoteColumns.ISUP, 1);
       }
-
+      builder.withValue(QuoteColumns.CREATED, created);
     } catch (JSONException e){
       e.printStackTrace();
     }

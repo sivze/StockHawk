@@ -4,4 +4,5 @@
         android:minHeight="@dimen/widget_default_height"
         android:minWidth="@dimen/widget_default_width"
         android:previewImage="@drawable/widget_preview_collection"
-        android:updatePeriodMillis="0" />
+        android:updatePeriodMillis="0"
+        android:resizeMode="horizontal|vertical" />

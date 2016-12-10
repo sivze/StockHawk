@@ -6,6 +6,7 @@ import com.google.android.gms.gcm.TaskParams;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -30,6 +31,7 @@ import java.net.URLEncoder;
  * and is used for the initialization and adding task as well.
  */
 public class StockTaskService extends GcmTaskService{
+  public static String ACTION_UPDATE = "com.sam_chordas.android.stockhawk.ACTION_UPDATE";
   private String LOG_TAG = StockTaskService.class.getSimpleName();
 
   private OkHttpClient client = new OkHttpClient();
@@ -121,7 +123,7 @@ public class StockTaskService extends GcmTaskService{
         try {
           if (Utils.quoteJsonToContentVals(getResponse) != null) {
             ContentValues contentValues = new ContentValues();
-            // update ISCURRENT to 0 (false) so new data is current
+            updateWidgets();
             if (isUpdate) {
               contentValues.put(QuoteColumns.ISCURRENT, 0);
               mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
@@ -140,6 +142,11 @@ public class StockTaskService extends GcmTaskService{
     }
 
     return result;
+  }
+
+  private void updateWidgets() {
+    Intent update = new Intent(ACTION_UPDATE).setPackage(mContext.getPackageName());
+    mContext.sendBroadcast(update);
   }
 
 }

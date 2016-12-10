@@ -98,7 +98,7 @@ public class StockDetailActivity extends AppCompatActivity {
                         cursor.getString(COLUMN_PERCENT),
                         cursor.getString(COLUMN_CHANGE),
                         cursor.getString(COLUMN_CREATED),
-                        cursor.getString(COLUMN_ISUP))
+                        cursor.getInt(COLUMN_ISUP))
                 );
             while (cursor.moveToNext());
 
@@ -213,12 +213,12 @@ public class StockDetailActivity extends AppCompatActivity {
         String date;
         boolean isUp;
 
-        public Quote(String price, String percent, String change, String date, String isUp) {
+        public Quote(String price, String percent, String change, String date, int isUp) {
             this.price = price;
             this.percent = percent;
             this.change = change;
             this.date = date;
-            this.isUp = isUp.equals("1");
+            this.isUp = isUp == 1;
         }
 
         public String getPrice() {
